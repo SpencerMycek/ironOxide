@@ -27,7 +27,6 @@ pub async fn run() -> Result<()> {
         }
     };
 
-
     let body = fetch_url(&url).await?;
 
     println!("{}", body);

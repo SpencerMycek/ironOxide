@@ -6,10 +6,7 @@
 async fn main() -> iron_oxide::Result<()> {
     pretty_env_logger::init();
 
-    let _running = iron_oxide::run();
-    //running.await?;
-    
-    Ok(())
-
+    let running = iron_oxide::run();
+    running.await
 }
 
