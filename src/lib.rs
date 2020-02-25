@@ -6,7 +6,8 @@ use std::{env, str};
 use failure::Fail;
 #[macro_use] extern crate failure;
 
-use hyper::{body::HttpBody as _, Client};
+use hyper::{body::HttpBody as _1, Client};
+use hyper_rustls::HttpsConnector;
 //use tokio::io::{self, AsyncWriteExt as _};
 
 // Type alias so as to DRY
@@ -36,14 +37,10 @@ pub async fn run() -> Result<()> {
 
 
 async fn fetch_url(url:& str) -> Result<String> {
-    let client = Client::new();
-    
-    // HTTPS requires picking a TLS implementation, so give a better
-    // warning if the user tries to request an 'https' URL.
     let url = url.parse::<hyper::Uri>().unwrap();
-    if url.scheme_str() != Some("http") {
-        return Result::Err(Box::new(HttpsError("This example only works with 'http' URLs.".into()).compat()));
-    }
+   
+    let https = HttpsConnector::new();
+    let client = Client::builder().build::<_, hyper::Body>(https);
 
     let mut res = client.get(url).await?;
 
