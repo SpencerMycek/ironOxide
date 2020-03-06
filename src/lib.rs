@@ -1,22 +1,20 @@
-#![deny(warnings)]
+//#![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
 use std::{env, str};
 
-use failure::Fail;
-#[macro_use] extern crate failure;
+//use failure::Fail;
+//#[macro_use] extern crate failure;
 
 use hyper::{body::HttpBody as _1, Client};
 use hyper_rustls::HttpsConnector;
 //use tokio::io::{self, AsyncWriteExt as _};
 
+mod html_dom;
+use html_dom::{Dom};
+
 // Type alias so as to DRY
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
-
-#[derive(Fail, Debug)]
-#[fail(display = "There is an error: {}.", _0)]
-struct HttpsError(String);
-
 
 pub async fn run() -> Result<()> {
     // Some simple CLI args requirements...
@@ -28,15 +26,34 @@ pub async fn run() -> Result<()> {
         }
     };
 
-    let body = fetch_url(&url).await?;
+    let __body = http_get(&url).await?;
 
-    println!("{}", body);
+    //println!("{}", body);
+    
+    {
+        let result = Dom::parse_document("<!DOCTYPE html> AHHHHHHAHAHAHAH");
+        let dom = match result {
+            Ok(dom) => dom,
+            Err(e) => return Err(e),
+        };
+        println!("{}", dom.root_element().to_string(0));
+    };
 
     Ok(())
 }
 
 
-async fn fetch_url(url:& str) -> Result<String> {
+/*
+ * Function: http_get
+ * -------------------
+ * async Function, Makes an HTTP get request to the given url
+ *  and returns a Result wrapped String
+ *
+ * url:     The url to request
+ *
+ * return:  Result containing Error or HTTP Response body
+ */
+async fn http_get(url:& str) -> Result<String> {
     let url = url.parse::<hyper::Uri>().unwrap();
    
     let https = HttpsConnector::new();
@@ -51,9 +68,10 @@ async fn fetch_url(url:& str) -> Result<String> {
 
     // Stream the body, writing each chunk to stdout as we get it
     // (instead of buffering and printing at the end).
+    // Actually saves data into a String to return
     while let Some(next) = res.data().await {
         let chunk = next?;
-        body.push_str(str::from_utf8(&chunk)?);
+        body.push_str(&String::from_utf8_lossy(&chunk));
         //io::stdout().write_all(&chunk).await?;
     }
 
