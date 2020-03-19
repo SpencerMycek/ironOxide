@@ -4,7 +4,17 @@
 
 use std::collections::HashMap;
 use std::fmt;
+use std::convert::TryFrom;
+use std::convert::TryInto;
 use super::Result;
+
+pub static TEST_HTML: &str = "<!DOCTYPE html>
+<html>
+<head>
+I should be able to put whatever I want into here without errors
+</head>
+</html>";
+
 
 pub enum HtmlTagType {
     TEXT, // Special tag type, used to Store untagged text
@@ -55,9 +65,9 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(name: HtmlTagType) -> Self {
+    pub fn new(name: HtmlTagType, text: &str) -> Self {
         let attrs = HashMap::new();
-        let text = "Main Node";
+        let text = text;
         let tag = Tag::new(name, attrs, text);
         let children = Vec::<Node>::new();
         Node { tag, children }
@@ -109,22 +119,34 @@ impl Dom {
         return &self.root;
     }
 
-    fn parse_html(__html: &str) -> Node {
-        return Node::new(HtmlTagType::P);
+    fn parse_html(html: &str) -> Node {
+        let chars: Vec<char> = html.chars().collect();
+        let mut index: usize = 0;
+        let mut tag: String = String::new();
+        
+        for _ in 1..=2 {
+            let result = next_tag(&chars, index);
+            index = result.0;
+            tag = result.1.trim().to_string();
+        }
+        let tag_end: isize = close_tag(&chars, index, &tag).unwrap();
+
+        let size = tag.len();
+        if &tag[1..size-1] == "html" {
+            return Node::new(HtmlTagType::HTML, &html[index..usize::try_from(tag_end).unwrap()-size-1])
+        } else {
+            return Node::new(HtmlTagType::P, "Main Node")
+        }
     }
 
     fn parse_htmlfrag(__html: &str) -> Node {
-        return Node::new(HtmlTagType::P);
+        return Node::new(HtmlTagType::P, "Frag Node");
     }
     
     fn parse_doctype(html: &str) -> Result<DocType> {
-        let mut doctype: String = String::from("");
-        for c in html.chars() {
-            doctype.push(c);
-            if c == '>' {
-                break;
-            }
-        }
+        let chars: Vec<char> = html.chars().collect();
+        let doctype = next_tag(&chars, 0).1;
+
         let doctype = doctype.replace(&['<', '>'][..], "");
         let size = doctype.split(' ').count();
 
@@ -139,5 +161,39 @@ impl Dom {
         }
         return Err(Box::from("No matching DOCTYPE"));
     }
+}
+
+fn next_tag(html: &Vec<char>, mut index: usize) -> (usize, String) {
+    let size = html.len();
+    let mut tag = String::new();
+
+    for (i, c) in (index..size).enumerate() {
+        tag.push(html[c]);
+        if html[c] == '>' {
+            index += i+1;
+            break
+        }
+    }
+    return (index, tag);
+}
+
+fn close_tag(html: &Vec<char>, mut index: usize, tag: &String) -> Result<isize> {
+    let size = html.len();
+    let mut close_tag: String = tag.clone();
+    close_tag.insert(1, '/');
+    let mut buffer = String::new();
+
+    for c in index..size {
+            index += 1;
+        if html[c] == ' ' || html[c] == '\n' {
+            buffer.clear();
+        } else {
+            buffer.push(html[c]);
+            if buffer == close_tag {
+                return Ok(isize::try_from(index).unwrap())
+            }
+        }
+    }
+    Ok(-1)
 }
 

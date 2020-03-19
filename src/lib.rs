@@ -12,6 +12,7 @@ use hyper_rustls::HttpsConnector;
 
 mod html_dom;
 use html_dom::{Dom};
+use html_dom::TEST_HTML as test; // Used for testing
 
 // Type alias so as to DRY
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -31,7 +32,7 @@ pub async fn run() -> Result<()> {
     //println!("{}", body);
     
     {
-        let result = Dom::parse_document("<!DOCTYPE html> AHHHHHHAHAHAHAH");
+        let result = Dom::parse_document(test);
         let dom = match result {
             Ok(dom) => dom,
             Err(e) => return Err(e),
@@ -64,7 +65,7 @@ async fn http_get(url:& str) -> Result<String> {
     println!("Response: {}", res.status());
     println!("Headers: {:#?}\n", res.headers());
 
-    let mut body = String::from("");
+    let mut body = String::new();
 
     // Stream the body, writing each chunk to stdout as we get it
     // (instead of buffering and printing at the end).
