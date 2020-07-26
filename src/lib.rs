@@ -1,18 +1,16 @@
-//#![deny(warnings)]
+#![allow(dead_code)]
+#![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
 use std::{env, str};
-
-//use failure::Fail;
-//#[macro_use] extern crate failure;
-
 use hyper::{body::HttpBody as _1, Client};
 use hyper_rustls::HttpsConnector;
-//use tokio::io::{self, AsyncWriteExt as _};
 
-mod html_dom;
-use html_dom::{Dom};
-use html_dom::TEST_HTML as test; // Used for testing
+use pest;
+//#[macro_use] extern crate pest_derive;
+
+mod dom;
+mod grammar;
 
 // Type alias so as to DRY
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -27,19 +25,22 @@ pub async fn run() -> Result<()> {
         }
     };
 
-    let __body = http_get(&url).await?;
+    let body = http_get(&url).await?;
 
-    //println!("{}", body);
-    
-    {
-        let result = Dom::parse_document(test);
-        let dom = match result {
-            Ok(dom) => dom,
-            Err(e) => return Err(e),
-        };
-        println!("{}", dom.root_element().to_string(0));
-    };
-
+    println!("{}", body);
+   /* 
+    *let mut text1 = dom::text("Hello, World".to_string());
+    *let text2 = dom::text("Hello, 2!".to_string());
+    *text1.children.push(text2);
+    *let text2 = dom::text("Hello, 2!".to_string());
+    *let comment = dom::comment("<!--Comment!-->".to_string());
+    *let mut attrs = dom::AttrMap::new();
+    *attrs.insert("Attr 1".to_string(), "Value 1".to_string());
+    *attrs.insert("Attr 2".to_string(), "Value 2".to_string());
+    *attrs.insert("Attr 3".to_string(), "Value 3".to_string());
+    *let element = dom::elem("Elem1".to_string(), attrs, vec![text1, comment, text2]);
+    *dom::print_dom(&element);
+    */
     Ok(())
 }
 
@@ -62,8 +63,8 @@ async fn http_get(url:& str) -> Result<String> {
 
     let mut res = client.get(url).await?;
 
-    println!("Response: {}", res.status());
-    println!("Headers: {:#?}\n", res.headers());
+    //println!("Response: {}", res.status());
+    //println!("Headers: {:#?}\n", res.headers());
 
     let mut body = String::new();
 
