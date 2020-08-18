@@ -6,14 +6,24 @@ use std::{env, str};
 use hyper::{body::HttpBody as _1, Client};
 use hyper_rustls::HttpsConnector;
 
-use pest;
+//use pest::{self, Parser};
 //#[macro_use] extern crate pest_derive;
 
 mod dom;
+mod error;
 mod grammar;
 
+use grammar::Rule;
+
+pub use crate::dom::element::{Element, ElementVariant};
+pub use crate::dom::node::Node;
+pub use crate::dom::Dom;
+pub use crate::dom::DomVariant;
+pub use crate::error::Error;
+pub use anyhow::Result;
+
 // Type alias so as to DRY
-pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+//pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 pub async fn run() -> Result<()> {
     // Some simple CLI args requirements...
@@ -26,9 +36,28 @@ pub async fn run() -> Result<()> {
     };
 
     let body = http_get(&url).await?;
+    let dom = Dom::parse(&body)?;
 
-    println!("{}", body);
-   /* 
+    println!("{}", dom.to_json_pretty()?);
+
+    /*
+    //println!("{}", body);
+    let pairs = match HTMLParser::parse(Rule::html, &body) {
+        Ok(pairs) => pairs,
+        Err(_) => panic!("Could not parse"),
+    };
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::doctype => println!("{:?}", pair.into_inner()),
+            Rule::element => println!("{:?}", pair.as_span()),
+            Rule::text => println!("{:?}", pair.as_span()),
+            Rule::EOI => (),
+            _ => unreachable!(),
+        }
+    }
+    */
+
+    /* 
     *let mut text1 = dom::text("Hello, World".to_string());
     *let text2 = dom::text("Hello, 2!".to_string());
     *text1.children.push(text2);
@@ -41,6 +70,9 @@ pub async fn run() -> Result<()> {
     *let element = dom::elem("Elem1".to_string(), attrs, vec![text1, comment, text2]);
     *dom::print_dom(&element);
     */
+
+    
+
     Ok(())
 }
 

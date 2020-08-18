@@ -1,25 +1,25 @@
 html = _{ SOI ~ doctype? ~ node* ~ EOI }
 
-doctype = { lt_bang ~ ^"doctype" ~ attr* ~ chevron_right_normal }
+doctype = { lt_bang ~ ^"doctype" ~ attr* ~ gt }
 
 ///
 /// Nodes
 ///
 node = _{ comment | element | text }
 
-comment = { comment_start (!comment_end ~ ANY)* ~ comment_end }
-comment_start = _{ lt_bang ~ -- }
+comment = { comment_start ~ (!comment_end ~ ANY)* ~ comment_end }
+comment_start = _{ lt_bang ~ "--" }
 comment_end = _{ "--" ~ gt }
 
 text = { (!(lt | comment_start) ~ ANY) + } // Will break if text includes '<'
 
-element = {}
+element = { void_element | normal_element | raw_text_element | dangling_element }
 
 ///
 /// Attributes
 ///
 attr = { attr_key ~ (equal ~ (attr_non_quoted | attr_quoted))? }
-attr_quoted _{ PUSH(quote) ~ attr_value ~ POP }
+attr_quoted = _{ PUSH(quote) ~ attr_value ~ POP }
 attr_non_quoted = @{ !quote ~ (!(WHITESPACE | tag_end) ~ ANY)* }
 attr_key = { ASCII_ALPHA ~ text_chars* }
 attr_value = { (!PEEK ~ ANY)* }
@@ -35,7 +35,7 @@ e_void_html = @{ ^"area" | ^"base" | ^"br" | ^"col" | ^"command"
     | ^"embed" | ^"hr" | ^"img" | ^"input" | ^"keygen" | ^"link" | ^"meta" 
     | ^"param" | ^"source" | ^"track" | ^"wbr" | ^"meta" 
 }
-e_void_svn = @{ ^"path" | ^"polygon" | ^"rect" | ^"circle" }
+e_void_svg= @{ ^"path" | ^"polygon" | ^"rect" | ^"circle" }
 void_element_name = @{ e_void_html | e_void_svg }
 void_element = _{ lt ~ void_element_name ~ attr* ~ tag_end }
 
@@ -46,8 +46,8 @@ normal_element_end = { lt_close ~ POP ~ gt }
 
 // Raw text elements that might interfere with normal html
 raw_element_name = { ^"style" | ^"script" | ^"title" | ^"text_area" }
-raw_text_content = { (!raw_element_end ~ ANY )* }
-raw_text = _{ raw_text_start ~ raw_text_content ~ raw_text_end }
+raw_text_content = { (!raw_text_end ~ ANY )* }
+raw_text_element = _{ raw_text_start ~ raw_text_content ~ raw_text_end }
 raw_text_start = _{ lt ~ PUSH(raw_element_name) ~ attr* ~ gt }
 raw_text_end = { lt_close ~ POP ~ gt }
 
@@ -57,7 +57,7 @@ dangling_element = { lt ~ element_name ~ gt }
 ///
 /// Symbols and Characters
 ///
-text = _{ 'a'..'z' | 'A'..'Z' | "_" | "-" | ":" | ";" | '0'..'9' }
+text_chars = _{ 'a'..'z' | 'A'..'Z' | "_" | "-" | ":" | ";" | '0'..'9' }
 
 lt = _{ "<" }
 lt_bang = _{ "<!" }
@@ -68,7 +68,7 @@ gt_close = _{ "/>" }
 tag_end = _ { gt | gt_close }
 
 equal = _{ "=" }
-qoute_double = _{ "\"" }
+quote_double = _{ "\"" }
 quote_single = _{ "\'" }
 quote = { quote_double | quote_single }
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
