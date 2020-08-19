@@ -35,8 +35,9 @@ pub async fn run() -> Result<()> {
         }
     };
 
-    let body = http_get(&url).await?;
-    let dom = Dom::parse(&body)?;
+    let _body = http_get(&url).await?;
+    //let dom = Dom::parse(&body)?;
+    let dom = Dom::parse("<div/>")?;
 
     println!("{}", dom.to_json_pretty()?);
 

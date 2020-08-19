@@ -71,12 +71,12 @@ impl Dom {
                 Rule::doctype => {
                     dom.tree_type = DomVariant::DocumentFragment;
                 }
-                Rule::element => {
+                Rule::node_element => {
                     if let Some(node) = Self::build_node_element(pair.into_inner())? {
                         dom.children.push(node);
                     }
                 }
-                Rule::text => {
+                Rule::node_text => {
                     dom.children.push(Node::Text(pair.as_str().to_string()));
                 }
                 Rule::EOI => break,
@@ -131,15 +131,15 @@ impl Dom {
         let mut element = Element::default();
         for pair in pairs {
             match pair.as_rule() {
-                Rule::element | Rule::raw_text_element => {
+                Rule::node_element | Rule::el_raw_text => {
                     if let Some(child_element) = Self::build_node_element(pair.into_inner())? {
                         element.children.push(child_element)
                     }
                 }
-                Rule::text | Rule::raw_text_content => {
+                Rule::node_text | Rule::el_raw_text_content => {
                     element.children.push(Node::Text(pair.as_str().to_string()));
                 }
-                Rule::element_name | Rule::void_element_name | Rule::raw_element_name => {
+                Rule::el_name | Rule::el_void_name | Rule::el_raw_text_name => {
                     element.name = pair.as_str().to_string();
                 }
                 Rule::attr => {
@@ -159,11 +159,11 @@ impl Dom {
                         }
                     };
                 }
-                Rule::normal_element_end | Rule::raw_text_end => {
+                Rule::el_normal_end | Rule::el_raw_text_end => {
                     element.variant = ElementVariant::Normal;
                     break;
                 }
-                Rule::dangling_element => (),
+                Rule::el_dangling => (),
                 Rule::EOI => (),
                 _ => unreachable!("unknown tpl rule: {:?}", pair.as_rule())
             }

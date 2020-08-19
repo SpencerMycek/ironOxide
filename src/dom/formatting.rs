@@ -13,6 +13,7 @@ pub fn error_msg(error: PestError<Rule>) -> Result<super::Dom> {
     let message = error.renamed_rules(|rule| match *rule {
         Rule::EOI => "end of input".to_string(),
         Rule::doctype => "doctype element".to_string(),
+        Rule::attr_key => "attribute key".to_string(),
         // TODO: Continue
         x => format!("{:?} ", x),
     });
