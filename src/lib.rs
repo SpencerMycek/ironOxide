@@ -2,9 +2,10 @@
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
-use std::{env, str};
+use std::{str};
 use hyper::{body::HttpBody as _1, Client};
 use hyper_rustls::HttpsConnector;
+use clap::ArgMatches;
 
 //use pest::{self, Parser};
 //#[macro_use] extern crate pest_derive;
@@ -25,19 +26,22 @@ pub use anyhow::Result;
 // Type alias so as to DRY
 //pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-pub async fn run() -> Result<()> {
-    // Some simple CLI args requirements...
-    let url = match env::args().nth(1) {
-        Some(url) => url,
-        None => {
-            println!("Usage: client <url>");
-            return Ok(());
-        }
+pub async fn run(args: ArgMatches) -> Result<()> {
+    let url = match args.value_of("url") {
+      Some(x) => x,
+      _ => panic!("Did not receive url."),
     };
+    // Some simple CLI args requirements...
+    //let url = match env::args().nth(1) {
+    //    Some(url) => url,
+    //    None => {
+    //        println!("Usage: client <url>");
+    //        return Ok(());
+    //    }
+    //};
 
-    let _body = http_get(&url).await?;
-    //let dom = Dom::parse(&body)?;
-    let dom = Dom::parse("<div/>")?;
+    let body = http_get(&url).await?;
+    let dom = Dom::parse(&body)?;
 
     println!("{}", dom.to_json_pretty()?);
 
