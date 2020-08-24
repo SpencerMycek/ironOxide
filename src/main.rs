@@ -22,12 +22,6 @@ async fn main() -> iron_oxide::Result<()> {
 
     builder.filter(None, filter).init();
 
-    trace!("a trace example");
-    debug!("deboogging");
-    info!("such information");
-    warn!("o_O");
-    error!("boom");
-
     let running = iron_oxide::run(args);
     running.await
 }
