@@ -13,6 +13,7 @@ use clap::ArgMatches;
 mod dom;
 mod error;
 mod grammar;
+mod display;
 
 use grammar::Rule;
 
@@ -31,52 +32,13 @@ pub async fn run(args: ArgMatches) -> Result<()> {
       Some(x) => x,
       _ => panic!("Did not receive url."),
     };
-    // Some simple CLI args requirements...
-    //let url = match env::args().nth(1) {
-    //    Some(url) => url,
-    //    None => {
-    //        println!("Usage: client <url>");
-    //        return Ok(());
-    //    }
-    //};
 
     let body = http_get(&url).await?;
-    let dom = Dom::parse(&body)?;
+    let _dom = Dom::parse(&body)?;
 
-    println!("{}", dom.to_json_pretty()?);
+    //println!("{}", dom.to_json_pretty()?);
 
-    /*
-    //println!("{}", body);
-    let pairs = match HTMLParser::parse(Rule::html, &body) {
-        Ok(pairs) => pairs,
-        Err(_) => panic!("Could not parse"),
-    };
-    for pair in pairs {
-        match pair.as_rule() {
-            Rule::doctype => println!("{:?}", pair.into_inner()),
-            Rule::element => println!("{:?}", pair.as_span()),
-            Rule::text => println!("{:?}", pair.as_span()),
-            Rule::EOI => (),
-            _ => unreachable!(),
-        }
-    }
-    */
-
-    /* 
-    *let mut text1 = dom::text("Hello, World".to_string());
-    *let text2 = dom::text("Hello, 2!".to_string());
-    *text1.children.push(text2);
-    *let text2 = dom::text("Hello, 2!".to_string());
-    *let comment = dom::comment("<!--Comment!-->".to_string());
-    *let mut attrs = dom::AttrMap::new();
-    *attrs.insert("Attr 1".to_string(), "Value 1".to_string());
-    *attrs.insert("Attr 2".to_string(), "Value 2".to_string());
-    *attrs.insert("Attr 3".to_string(), "Value 3".to_string());
-    *let element = dom::elem("Elem1".to_string(), attrs, vec![text1, comment, text2]);
-    *dom::print_dom(&element);
-    */
-
-    
+    display::draw();
 
     Ok(())
 }
