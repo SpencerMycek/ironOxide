@@ -2,15 +2,20 @@
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
-use clap::{Arg, App, ArgMatches};
+use clap::Clap;
 
-pub fn get_args() -> ArgMatches {
-    App::new("Iron Oxide")
-        .arg(Arg::with_name("url").index(1).required(true))
-        .arg(Arg::with_name("v")
-             .short('v')
-             .multiple(true)
-             .about("Sets the level of verbosity"))
-        .get_matches()
+/// Test Doc String help message
+#[derive(Clap)]
+#[clap(version="0.9", author="Spencer M. <Spence.Mycek@gmail.com>")]
+pub struct Opts {
+    /// A level of verbosity, can be used multiple times
+    #[clap(short, long, parse(from_occurrences))]
+    pub verbose: i32,
+    /// URL to get
+    pub url: String,
+}
+
+pub fn get_args() -> Opts {
+    Opts::parse()
 }
 

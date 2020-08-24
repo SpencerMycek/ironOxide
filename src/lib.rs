@@ -5,15 +5,12 @@
 use std::{str};
 use hyper::{body::HttpBody as _1, Client};
 use hyper_rustls::HttpsConnector;
-use clap::ArgMatches;
-
-//use pest::{self, Parser};
-//#[macro_use] extern crate pest_derive;
 
 mod dom;
 mod error;
 mod grammar;
 mod display;
+pub mod cli;
 
 use grammar::Rule;
 
@@ -22,21 +19,19 @@ pub use crate::dom::node::Node;
 pub use crate::dom::Dom;
 pub use crate::dom::DomVariant;
 pub use crate::error::Error;
+pub use crate::cli::Opts;
 pub use anyhow::Result;
 
 // Type alias so as to DRY
 //pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-pub async fn run(args: ArgMatches) -> Result<()> {
-    let url = match args.value_of("url") {
-      Some(x) => x,
-      _ => panic!("Did not receive url."),
-    };
+pub async fn run(args: cli::Opts) -> Result<()> {
+    let url = args.url;
 
     let body = http_get(&url).await?;
-    let _dom = Dom::parse(&body)?;
+    let dom = Dom::parse(&body)?;
 
-    //println!("{}", dom.to_json_pretty()?);
+    println!("{}", dom.to_json_pretty()?);
 
     display::draw();
 

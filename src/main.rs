@@ -5,7 +5,7 @@ use pretty_env_logger;
 use log::LevelFilter;
 #[macro_use] extern crate log;
 
-mod cli;
+use iron_oxide::cli;
 
 #[tokio::main]
 async fn main() -> iron_oxide::Result<()> {
@@ -13,7 +13,7 @@ async fn main() -> iron_oxide::Result<()> {
 
     let mut builder = pretty_env_logger::formatted_builder();
 
-    let filter = match args.occurrences_of("v") {
+    let filter = match args.verbose {
         0 => LevelFilter::Error,
         1 => LevelFilter::Warn,
         2 => LevelFilter::Info,

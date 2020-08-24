@@ -12,8 +12,8 @@ pub fn draw() {
         Result::Err(e) => panic!("{}", e),
     };
 
-    rustbox.print(1, 1, rustbox::RB_BOLD, Color::White, Color::Black, "Hello, World!");
-    rustbox.print(1, 3, rustbox::RB_BOLD, Color::White, Color::Black,
+    rustbox.print(1, 1, rustbox::RB_BOLD, Color::White, Color::Default, "Hello, World!");
+    rustbox.print(1, 3, rustbox::RB_BOLD, Color::White, Color::Default,
                   "Press q to quit.");
     rustbox.present();
     loop {
