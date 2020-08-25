@@ -31,9 +31,7 @@ pub async fn run(args: cli::Opts) -> Result<()> {
     let body = http_get(&url).await?;
     let dom = Dom::parse(&body)?;
 
-    println!("{}", dom.to_json_pretty()?);
-
-    display::draw();
+    display::display(&dom, args.ncurses);
 
     Ok(())
 }

@@ -5,8 +5,9 @@
 use std::default::Default;
 
 use rustbox::{Color, RustBox, Key};
+use super::dom::Dom;
 
-pub fn draw() {
+fn draw() {
     let rustbox = match RustBox::init(Default::default()) {
         Result::Ok(v) => v,
         Result::Err(e) => panic!("{}", e),
@@ -27,6 +28,14 @@ pub fn draw() {
             Err(e) => panic!("{}", e),
             _ => { }
         }
+    }
+}
+
+pub fn display(dom: &Dom, ncurses: bool) {
+    if ncurses {
+        draw()
+    } else { 
+        println!("{}", dom.to_json_pretty().expect("JSON Print failed"));
     }
 }
 

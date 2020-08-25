@@ -4,17 +4,19 @@
 
 use clap::Clap;
 
-/// Test Doc String help message
+/// A rust-based mini web-browser
 #[derive(Clap)]
 #[clap(version="0.9", author="Spencer M. <Spence.Mycek@gmail.com>")]
 pub struct Opts {
     /// A level of verbosity, can be used multiple times
     #[clap(short, long, parse(from_occurrences))]
     pub verbose: i32,
-    /// URL to get
+    /// Request URL
     pub url: String,
+    /// Use ncurses for webpage display
+    #[clap(short, long)]
+    pub ncurses: bool,
 }
-
 pub fn get_args() -> Opts {
     Opts::parse()
 }
