@@ -17,6 +17,16 @@ pub struct Opts {
     #[clap(short, long)]
     pub ncurses: bool,
 }
+
+/*
+ * Function: get_args
+ * -------------------
+ * Parses command line arguments with clap-rs,
+ *     cli args are build with clap derive in Opts
+ *
+ * return:  An Opts struct of parsed command line args
+ *              Or exits the program
+ */
 pub fn get_args() -> Opts {
     Opts::parse()
 }
