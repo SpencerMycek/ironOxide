@@ -48,8 +48,36 @@ fn display_text(dom: &Dom) {
         println!("/=====No=Title=====/");
     }
     let mut text = "".to_string();
-    text.push_str("Test");
     println!("{}", text);
+    let root = match dom.tree_type {
+        DomVariant::Document => {
+            let mut root = (&dom.children[0]).element().unwrap();
+            for child in &root.children {
+                if let Node::Element(el) = child {
+                    if el.name.to_lowercase() == "body" {
+                        root = el;
+                    }
+                }
+            }
+            &root.children
+        },
+        _ => { &dom.children },
+    };
+    get_text(&mut text, root);
+    println!("{}", text);
+}
+
+fn get_text(buf: &mut String, nodes: &Vec<Node>) {
+    for node in nodes {
+        match node {
+            Node::Text(s) => {
+                buf.push_str(&s);
+                buf.push('\n');
+            },
+            Node::Element(el) => {get_text(buf, &el.children);},
+            Node::Comment(_) => {},
+        }
+    }
 }
 
 fn get_title(dom: &Dom) -> Option<String> {
