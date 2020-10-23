@@ -2,82 +2,25 @@
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
-use std::default::Default;
-
-use rustbox::{Color, RustBox, Key};
 use super::dom::{DomVariant, Dom};
 use super::dom::node::Node;
 
+mod oxide_display_text;
+mod oxide_display_ncurses;
+
+use oxide_display_text as text;
+use oxide_display_ncurses as ncurses;
+
+
 pub fn display(dom: &Dom, ncurses: bool) {
     if ncurses {
-        display_ncurses(dom);
+        ncurses::display(dom);
     } else { 
-        display_text(dom);
+        text::display(dom);
     }
 }
 
 fn display_ncurses(_dom: &Dom) {
-    let rustbox = match RustBox::init(Default::default()) {
-        Result::Ok(v) => v,
-        Result::Err(e) => panic!("{}", e),
-    };
-
-    rustbox.print(1, 1, rustbox::RB_BOLD, Color::White, Color::Default, "Hello, World!");
-    rustbox.print(1, 3, rustbox::RB_BOLD, Color::White, Color::Default,
-                  "Press q to quit.");
-    rustbox.present();
-    loop {
-        match rustbox.poll_event(false) {
-            Ok(rustbox::Event::KeyEvent(key)) => {
-                match key {
-                    Key::Char('q') => {break;}
-                    _ => {}
-                }
-            },
-            Err(e) => panic!("{}", e),
-            _ => { }
-        }
-    }
-}
-
-fn display_text(dom: &Dom) {
-    //println!("{}", dom.to_json_pretty().expect("JSON Print failed"));
-    if let Some(s) = get_title(dom) {
-        println!("/====={}=====/", s);
-    } else {
-        println!("/=====No=Title=====/");
-    }
-    let mut text = "".to_string();
-    println!("{}", text);
-    let root = match dom.tree_type {
-        DomVariant::Document => {
-            let mut root = (&dom.children[0]).element().unwrap();
-            for child in &root.children {
-                if let Node::Element(el) = child {
-                    if el.name.to_lowercase() == "body" {
-                        root = el;
-                    }
-                }
-            }
-            &root.children
-        },
-        _ => { &dom.children },
-    };
-    get_text(&mut text, root);
-    println!("{}", text);
-}
-
-fn get_text(buf: &mut String, nodes: &Vec<Node>) {
-    for node in nodes {
-        match node {
-            Node::Text(s) => {
-                buf.push_str(&s);
-                buf.push('\n');
-            },
-            Node::Element(el) => {get_text(buf, &el.children);},
-            Node::Comment(_) => {},
-        }
-    }
 }
 
 fn get_title(dom: &Dom) -> Option<String> {
