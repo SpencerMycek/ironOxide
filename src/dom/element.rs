@@ -1,4 +1,7 @@
-#![allow(dead_code)]
+//! # Iron Oxide Element
+//!
+//! Defines html elements that will be inside of a DOM
+
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 

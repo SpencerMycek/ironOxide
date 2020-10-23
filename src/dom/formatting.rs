@@ -1,3 +1,7 @@
+//! # Iron Oxide Dom Error Formatting
+//!
+//! Makes the Errors from PEST more user friendly
+
 #![allow(dead_code)]
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
@@ -7,8 +11,8 @@ use crate::Rule;
 use anyhow::Result;
 use pest::error::Error as PestError;
 
-// Absttact the formatting of errors away from the core logic inside the parser,
-// so that the file is easier to read.
+/// Abstracts the formatting of errors away from the core logic inside the parser,
+/// so that the file is easier to read.
 pub fn error_msg(error: PestError<Rule>) -> Result<super::Dom> {
     let message = error.renamed_rules(|rule| match *rule {
         Rule::EOI => "end of input".to_string(),

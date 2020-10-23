@@ -1,3 +1,7 @@
+//! # Iron Oxide CLI
+//!
+//! Controls and receives command line arguments for `Iron Oxide`
+
 #![allow(dead_code)]
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
@@ -18,15 +22,7 @@ pub struct Opts {
     pub ncurses: bool,
 }
 
-/*
- * Function: get_args
- * -------------------
- * Parses command line arguments with clap-rs,
- *     cli args are build with clap derive in Opts
- *
- * return:  An Opts struct of parsed command line args
- *              Or exits the program
- */
+/// Returns the command line arguments as a Clap-derived struct
 pub fn get_args() -> Opts {
     Opts::parse()
 }

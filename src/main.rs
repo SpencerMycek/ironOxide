@@ -1,3 +1,11 @@
+//! # Iron Oxide
+//!
+//! `Iron Oxide` is a lite web browser written entirely in rust.
+//!
+//! Due to using [`tokio`] the main function must be run as an async function.
+//!
+//! [`tokio`]: https://docs.rs/tokio/0.3.1/tokio/
+
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
@@ -7,6 +15,7 @@ use log::LevelFilter;
 
 use iron_oxide::cli;
 
+/// Prepares the environment with a logger and gathers command line arguments
 #[tokio::main]
 async fn main() -> iron_oxide::Result<()> {
     let args = cli::get_args();

@@ -1,3 +1,7 @@
+//! # Iron Oxide Ncurses Display
+//!
+//! Displays the web-content, typically an html webpage, using Ncurses
+
 #![allow(dead_code)]
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
@@ -7,6 +11,7 @@ use rustbox::{Color, RustBox, Key};
 
 use super::super::dom::Dom;
 
+/// # Displays the provided DOM using Ncurses
 pub fn display(_dom: &Dom) {
     let rustbox = match RustBox::init(Default::default()) {
         Result::Ok(v) => v,

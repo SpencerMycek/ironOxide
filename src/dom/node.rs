@@ -1,3 +1,7 @@
+//! # Iron Oxide Node
+//!
+//! Defines html nodes that will be inside of a DOM tree
+
 #![allow(dead_code)]
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]

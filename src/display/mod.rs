@@ -1,4 +1,8 @@
-#![allow(dead_code)]
+//! # Iron Oxide Display
+//!
+//! Provides functions used to display web-content for `Iron Oxide`.
+//! And is split into sub-modules depending on the requesed display type.
+
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
@@ -11,7 +15,7 @@ mod oxide_display_ncurses;
 use oxide_display_text as text;
 use oxide_display_ncurses as ncurses;
 
-
+/// Passes Display to control to the requested display type
 pub fn display(dom: &Dom, ncurses: bool) {
     if ncurses {
         ncurses::display(dom);
@@ -20,9 +24,10 @@ pub fn display(dom: &Dom, ncurses: bool) {
     }
 }
 
-fn display_ncurses(_dom: &Dom) {
-}
-
+/// Returns the Title of an html webpage from the Dom as a [`Option<String>`]
+/// This is a general use function, available to all display types.
+///
+/// [`Option<String>`]: https://doc.rust-lang.org/std/option/
 fn get_title(dom: &Dom) -> Option<String> {
     match dom.tree_type {
         DomVariant::Document => {
