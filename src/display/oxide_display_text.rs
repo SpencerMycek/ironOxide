@@ -6,9 +6,9 @@
 #![deny(warnings)]
 #![warn(rust_2018_idioms)]
 
-use super::super::dom::{DomVariant, Dom};
+use super::super::dom::Dom;
 use super::super::dom::node::Node;
-use super::get_title;
+use super::{get_title, get_visible_nodes};
 
 /// Displays the provided DOM using raw text
 pub fn display(dom: &Dom) {
@@ -20,21 +20,8 @@ pub fn display(dom: &Dom) {
     }
     let mut text = "".to_string();
     println!("{}", text);
-    let root = match dom.tree_type {
-        DomVariant::Document => {
-            let mut root = (&dom.children[0]).element().unwrap();
-            for child in &root.children {
-                if let Node::Element(el) = child {
-                    if el.name.to_lowercase() == "body" {
-                        root = el;
-                    }
-                }
-            }
-            &root.children
-        },
-        _ => { &dom.children },
-    };
-    get_text(&mut text, root);
+    let nodes = get_visible_nodes(&dom);
+    get_text(&mut text, nodes);
     println!("{}", text);
 }
 

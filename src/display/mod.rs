@@ -57,4 +57,23 @@ fn get_title(dom: &Dom) -> Option<String> {
     };
 }
 
+/// Returns a `Vec<Node>` containing either the Body element of an HTML
+/// Document or all the top-level nodes of the document fragment
+fn get_visible_nodes(dom: &Dom) -> &Vec<Node> {
+    let root: &Vec<Node> = match dom.tree_type {
+        DomVariant::Document => {
+            let mut root = (&dom.children[0]).element().unwrap();
+            for child in &root.children {
+                if let Node::Element(el) = child {
+                    if el.name.to_lowercase() == "body" {
+                        root = el;
+                    }
+                }
+            }
+            &root.children
+        },
+        _ => { &dom.children },
+    };
+    return &root;
+}
 
