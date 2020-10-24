@@ -8,6 +8,7 @@
 
 use super::super::dom::Dom;
 use super::super::dom::node::Node;
+use super::super::dom::element::HIDDEN_TAGS;
 use super::{get_title, get_visible_nodes};
 
 /// Displays the provided DOM using raw text
@@ -34,7 +35,11 @@ fn get_text(buf: &mut String, nodes: &Vec<Node>) {
                 buf.push_str(&s);
                 buf.push('\n');
             },
-            Node::Element(el) => {get_text(buf, &el.children);},
+            Node::Element(el) => {
+                if !(HIDDEN_TAGS.iter().any(|&i| i == el.name.to_lowercase())) {
+                    get_text(buf, &el.children);
+                }
+            },
             Node::Comment(_) => {},
         }
     }
