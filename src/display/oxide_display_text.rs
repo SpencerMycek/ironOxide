@@ -51,30 +51,54 @@ fn display_element_delegate(buf: &mut String, element: &Element) {
         "a" => display_element_anchor(buf, element),
         "article" => display_element_div(buf, element),
         "br" => buf.push_str("\n"),
+        "button" => buf.push_str("{Button elements not yet supported}"),
+        "center" => display_element_div(buf, element),
         "div" => display_element_div(buf, element),
-        "h1" => display_element_header(buf, &element.children[0], 1),
-        "h2" => display_element_header(buf, &element.children[0], 2),
-        "h3" => display_element_header(buf, &element.children[0], 3),
-        "h4" => display_element_header(buf, &element.children[0], 4),
-        "h5" => display_element_header(buf, &element.children[0], 5),
-        "h6" => display_element_header(buf, &element.children[0], 6),
+        "em" => display_element_augment_text(buf, element, "*"),
+        "figure" => buf.push_str("{Figure elements not yet supported}"),
+        "footer" => display_element_div(buf, element),
+        "form" => buf.push_str("{Form elements not yet supported}"),
+        "h1" => display_element_heading(buf, &element.children[0], 1),
+        "h2" => display_element_heading(buf, &element.children[0], 2),
+        "h3" => display_element_heading(buf, &element.children[0], 3),
+        "h4" => display_element_heading(buf, &element.children[0], 4),
+        "h5" => display_element_heading(buf, &element.children[0], 5),
+        "h6" => display_element_heading(buf, &element.children[0], 6),
+        "header" => display_element_div(buf, element),
         "hr" => buf.push_str("\n----\n"),
-        "iframe" => buf.push_str("Iframes not yet supported"),
-        "img" => buf.push_str("Img elements not yet supported"),
+        "iframe" => buf.push_str("{Iframes not yet supported}"),
+        "img" => buf.push_str("{Img elements not yet supported}"),
+        "input" => buf.push_str("{Input elements not yet supported}"),
+        "main" => display_element_div(buf, element),
         "nav" => display_element_nav(buf, element),
+        "noscript" => display_element_div(buf, element),
         "ol" => display_element_list_ordered(buf, element),
         "p" => display_element_paragraph(buf, element),
-        "picture" => buf.push_str("Picture elements not yet supported"),
+        "picture" => buf.push_str("{Picture elements not yet supported}"),
+        "section" => display_element_div(buf, element),
         "select" => {},
         "span" => display_element_div(buf, element),
-        "svg" => {}
+        "strong" => display_element_augment_text(buf, element, "**"),
+        "sub" => get_text(buf, &element.children),
+        "sup" => get_text(buf, &element.children),
+        "svg" => {},
+        "table" => buf.push_str("{Table elements not yet supported}"),
         "ul" => display_element_list_unordered(buf, element),
+        "video" => buf.push_str("{Video elements not yet supported}"),
         _ => {
             buf.push_str(&("Unsupported Element: ".to_owned() + el_name + " "));
             get_text(buf, &element.children);
         },
     };
 
+}
+
+/// Adds text augmentation to buffer string
+/// Emphasis or Strong - Italics or Bold
+fn display_element_augment_text(buf: &mut String, element: &Element, augment: &str) {
+    buf.push_str(augment);
+    get_text(buf, &element.children);
+    buf.push_str(augment);
 }
 
 /// Adds text representation of Div element to buffer string
@@ -84,7 +108,7 @@ fn display_element_div(buf: &mut String, element: &Element) {
 }
 
 /// Adds text representation of Header element to buffer string
-fn display_element_header(buf: &mut String, text: &Node, num: usize) {
+fn display_element_heading(buf: &mut String, text: &Node, num: usize) {
     if let Node::Text(t) = text {
         let header = "#".repeat(num)+" "+t+"\n";
         buf.push_str("\n");
@@ -101,28 +125,29 @@ fn display_element_paragraph(buf: &mut String, element: &Element) {
 
 /// Adds text representation of Anchor element to buffer string
 fn display_element_anchor(buf: &mut String, element: &Element) {
+    let anchor_text: &str;
     if (&element).children.len() != 0 {
-        let anchor_text = &element.children[0];
-        if let Node::Text(t) = anchor_text {
-            let anchor = "[".to_owned()+t+"]("+ match element.attributes.get("href") {
-                None => return,
-                Some(x) => match x {
-                    None => "N/A",
-                    Some(y) => y,
-                }
-            } +")";
-            buf.push_str(&anchor);
-        }
+        anchor_text = match &element.children[0] {
+            Node::Text(t) => &t,
+            _ => &"",
+        };
     } else {
-        let anchor = "<".to_owned()+ match element.attributes.get("href") {
-            None => return,
+        anchor_text = match element.attributes.get("aria-label") {
+            None => &"This link has no loadable text",
             Some(x) => match x {
+                None => "N/A",
+                Some(y) => &y,
+            },
+        };
+    }
+    let anchor = "[".to_owned()+anchor_text+"]("+ match element.attributes.get("href") {
+        None => return,
+        Some(x) => match x {
             None => "N/A",
             Some(y) => y,
-            }
-        } +">";
-        buf.push_str(&anchor);
-    }
+        }
+    } +")";
+    buf.push_str(&anchor);
 }
 
 /// Adds text representation of an ordered list to buffer string
