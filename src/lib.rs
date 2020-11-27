@@ -43,7 +43,7 @@ pub async fn run(args: cli::Opts) -> Result<()> {
 ///The body is returned as a [`String`]
 ///
 ///[`Result`]: https://doc.rust-lang.org/std/result/
-///[`Result`]: https://doc.rust-lang.org/std/string/struct.String.html
+///[`String`]: https://doc.rust-lang.org/std/string/struct.String.html
 async fn http_get(url:& str) -> Result<String> {
     let url = url.parse::<hyper::Uri>().unwrap();
    
