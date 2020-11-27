@@ -10,7 +10,7 @@ use clap::Clap;
 
 /// A rust-based mini web-browser
 #[derive(Clap)]
-#[clap(version="0.9", author="Spencer M. <Spence.Mycek@gmail.com>")]
+#[clap(version="0.9\n", author="Spencer M. <Spence.Mycek@gmail.com>")]
 pub struct Opts {
     /// A level of verbosity, can be used multiple times
     #[clap(short, long, parse(from_occurrences))]
