@@ -10,7 +10,9 @@ use std::default::Default;
 use rustbox::{Color, RustBox, Key};
 
 use super::super::dom::Dom;
-use super::get_title;
+use super::super::dom::node::Node;
+use super::super::dom::element::{Element, HIDDEN_TAGS};
+use super::{get_title, get_visible_nodes};
 
 static UPPER_LEFT: char = '\u{250C}';
 static UPPER_RIGHT: char = '\u{2510}';
@@ -29,29 +31,115 @@ pub fn display(dom: &Dom) {
     };
     let height: usize = rustbox.height() - 5;
     let width: usize = 84;
-    let left_margin = 2;
-    let top_margin = 4;
     let x = 1;
     let y = 3;
 
-    draw_border(&rustbox, x, y, width, height, Color::White, Color::White, Color::Default);
-    draw_title(&rustbox, x, y, width, Color::White, Color::Default, dom);
-    rustbox.print(left_margin, top_margin, rustbox::RB_BOLD, Color::White, 
-                  Color::Default, "Hello, World!");
-    rustbox.print(x+width-17, y+height, rustbox::RB_BOLD, Color::White, 
-                  Color::Default, "Press q to quit");
-    rustbox.present();
+
+    let title = match get_title(&dom) {
+        None => "".to_string(),
+        Some(x) => x,
+    };
+    let mut content = "".to_string();
+    let nodes = get_visible_nodes(&dom);
+    get_content(&mut content, nodes);
+    let processed_content: Vec<String> = process_content(content, width-4);
+    let content_length = processed_content.len();
+    let mut line: usize = 0;
+
     loop {
+        rustbox.clear();
+        draw_browser(&rustbox, x, y, width, height, &processed_content, &title, line);
+
         match rustbox.poll_event(false) {
             Ok(rustbox::Event::KeyEvent(key)) => {
                 match key {
-                    Key::Char('q') => {break;}
+                    Key::Char('q') => {break;},
+                    Key::Up => {
+                        if line != 0 {
+                            line -= 1;
+                        }
+                    },
+                    Key::Down => {
+                        if line < content_length {
+                            line += 1;
+                        }
+                    },
                     _ => {}
                 }
             },
             Err(e) => panic!("{}", e),
             _ => { }
         }
+    }
+}
+
+/// Handles everything needed to build and present the ncurses display
+fn draw_browser(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, content: &Vec<String>, title: &String, line: usize) {
+    draw_border(rb, x, y, width, height, Color::White, Color::White, Color::Default);
+    draw_title(rb, x, y, width, Color::White, Color::Default, title);
+    display_content(rb, x+2, y+1, height-2, content, line);
+    rb.present();
+    
+}
+
+/// Adds the lines of the content to the rustbox display, 
+/// only provides lines that will fit
+fn display_content(rb: &RustBox, x: usize, y: usize, height: usize, content: &Vec<String>, line: usize) {
+    let length = content.len();
+    for i in 0..height {
+        if i+line >= length {
+            break;
+        }
+        rb.print(x, y+i, rustbox::RB_NORMAL, Color::White, Color::Default,
+             &content[i+line]);
+    }
+}
+
+/// Splits a string into <width> character lines, stored in a Vec
+fn process_content(content: String, width: usize) -> Vec<String> {
+    let mut processed: Vec<String> = Vec::new();
+    let mut word_buf = String::with_capacity(width);
+    let mut line_buf = String::with_capacity(width);
+    let mut chars = content.chars();
+    loop {
+        let curr: char = match chars.next() {
+            None => {
+                if word_buf.len() != 0 {
+                    line_buf.push_str(&word_buf);
+                }
+                if line_buf.len() != 0 {
+                    processed.push(line_buf.clone());    
+                }
+                break;
+            },
+            Some(x) => x,
+        };
+        word_buf.push(curr);
+        if curr == ' ' || curr == '\n' {
+            if word_buf.len() + line_buf.len() > width {
+                processed.push(line_buf.clone());
+                line_buf.clear();
+            }
+            line_buf.push_str(&word_buf);
+            word_buf.clear();
+        }
+    }
+    return processed;
+}
+
+/// Fills a string buffer with content to display from the DOM
+/// Uses indirect recursion to access all elements
+fn get_content(buf: &mut String, nodes: &Vec<Node>) {
+    for node in nodes {
+        match node {
+            Node::Text(s) => buf.push_str(&s),
+            Node::Element(el) => {
+                if !(HIDDEN_TAGS.iter().any(|&i| i == el.name.to_lowercase())) {
+                    delegate_elements(buf, el);
+                }
+            },
+            Node::Comment(_) => {},
+        };
     }
 }
 
@@ -80,23 +168,20 @@ fn draw_border(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, _f
     rb.print_char(x, y+height, rustbox::RB_NORMAL, fg, bg, LOWER_LEFT);
     rb.print_char(x+width, y+height, rustbox::RB_NORMAL, fg, bg, LOWER_RIGHT);
     rb.print(x+1, y, rustbox::RB_NORMAL, fg, bg, "Iron Oxide");
+    rb.print(x+width-17, y+height, rustbox::RB_NORMAL, Color::White, 
+                  Color::Default, "Press q to quit");
 }
 
-fn draw_title(rb: &RustBox, x:usize, y:usize, width: usize, fg: Color, bg: Color, dom: &Dom) {
-    let mut title = match get_title(&dom) {
-        None => return,
-        Some(x) => x,
-    };
+fn draw_title(rb: &RustBox, x:usize, y:usize, width: usize, fg: Color, bg: Color, title: &str) {
+    let display_title: String;
     let length: usize;
     if title.len() >= 10 {
         length = 14;
-        title = (&title[0..7]).to_owned()+"...";
+        display_title = title[0..7].to_owned()+"...";
     } else {
         length = title.len()+4;
+        display_title = title.to_owned();
     }
-    rb.print(x+5, y+5, rustbox::RB_NORMAL, fg, bg, &title);
-    rb.print(x+5, y+6, rustbox::RB_NORMAL, fg, bg, &length.to_string());
-
     draw_vertical_line(rb, x+width, y-2, 2, fg, bg);
     draw_vertical_line(rb, x+width-length, y-2, 2, fg, bg);
     draw_horizontal_line(rb, x+width-length, y-2, length, fg, bg);
@@ -104,6 +189,19 @@ fn draw_title(rb: &RustBox, x:usize, y:usize, width: usize, fg: Color, bg: Color
     rb.print_char(x+width, y-2, rustbox::RB_NORMAL, fg, bg, UPPER_RIGHT);
     rb.print_char(x+width-length, y, rustbox::RB_NORMAL, fg, bg, TITLE_LOWER_LEFT);
     rb.print_char(x+width, y, rustbox::RB_NORMAL, fg, bg, TITLE_LOWER_RIGHT);
-    rb.print(x+width-length+2, y-1, rustbox::RB_NORMAL, fg, bg, &title);
+    rb.print(x+width-length+2, y-1, rustbox::RB_NORMAL, fg, bg, &display_title);
+}
+
+fn delegate_elements(buf: &mut String, element: &Element) {
+    let el_name: &str = &element.name.to_lowercase();
+    match &el_name[..] {
+        "p" => paragraph(buf, element),
+        _ => get_content(buf, &element.children),
+    };
+}
+
+fn paragraph(buf: &mut String, element: &Element) {
+    get_content(buf, &element.children);
+    buf.push('\n');
 }
 
