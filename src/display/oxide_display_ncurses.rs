@@ -60,7 +60,7 @@ pub fn display(dom: &Dom) {
                         }
                     },
                     Key::Down => {
-                        if line < content_length {
+                        if line < content_length-height+2 {
                             line += 1;
                         }
                     },
@@ -114,14 +114,28 @@ fn process_content(content: String, width: usize) -> Vec<String> {
             },
             Some(x) => x,
         };
-        word_buf.push(curr);
-        if curr == ' ' || curr == '\n' {
+        if curr == ' ' {
+            word_buf.push(curr);
             if word_buf.len() + line_buf.len() > width {
                 processed.push(line_buf.clone());
                 line_buf.clear();
             }
             line_buf.push_str(&word_buf);
             word_buf.clear();
+        } else if curr == '\n' {
+            if word_buf.len() + line_buf.len() > width {
+                processed.push(line_buf.clone());
+                processed.push(word_buf.clone());
+            } else {
+                line_buf.push_str(&word_buf);
+                processed.push(line_buf.clone());
+            }
+            line_buf.clear();
+            word_buf.clear();
+        } else if curr == '\t' {
+            word_buf.push_str(&" ".repeat(4));
+        } else {
+            word_buf.push(curr);
         }
     }
     return processed;
