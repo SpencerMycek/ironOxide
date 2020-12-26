@@ -11,7 +11,6 @@
 
 use pretty_env_logger;
 use log::LevelFilter;
-//#[macro_use] extern crate log;
 
 use iron_oxide::cli;
 

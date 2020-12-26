@@ -60,7 +60,7 @@ pub fn display(dom: &Dom) {
                         }
                     },
                     Key::Down => {
-                        if line < content_length-height+2 {
+                        if content_length >= height && line < content_length-height+2 {
                             line += 1;
                         }
                     },
@@ -209,12 +209,56 @@ fn draw_title(rb: &RustBox, x:usize, y:usize, width: usize, fg: Color, bg: Color
 fn delegate_elements(buf: &mut String, element: &Element) {
     let el_name: &str = &element.name.to_lowercase();
     match &el_name[..] {
+        "a" => {},
+        "article" => {},
+        "br" => buf.push('\n'),
+        "button" => buf.push_str("{Button elements not yet supported}"),
+        "center" => {},
+        "div" => div(buf, element),
+        "em" => {},
+        "figure" => buf.push_str("{Figure elements not yet supported}"),
+        "footer" => {},
+        "form" => buf.push_str("{Form elements not yet supported}"),
+        "h1" => {},
+        "h2" => {},
+        "h3" => {},
+        "h4" => {},
+        "h5" => {},
+        "h6" => {},
+        "header" => {},
+        "hr" => {},
+        "iframe" => buf.push_str("{Iframe elements not yet supported}"),
+        "img" => buf.push_str("{Img elements not yet supported}"),
+        "input" => buf.push_str("{Input elements not yet supported}"),
+        "main" => {},
+        "nav" => {},
+        "noscript" => {},
+        "ol" => {},
         "p" => paragraph(buf, element),
-        _ => get_content(buf, &element.children),
+        "picture" => buf.push_str("{Picture elements not yet supported}"),
+        "section" => {},
+        "select" => {},
+        "span" => {},
+        "strong" => {},
+        "sub" => get_content(buf, &element.children),
+        "sup" => get_content(buf, &element.children),
+        "svg" => {},
+        "table" => buf.push_str("{Table elements not yet supported}"),
+        "ul" => {},
+        "video" => buf.push_str("{Video elements not yet supported}"),
+        _ => {
+            buf.push_str(&("<".to_owned()+el_name+&">"));
+            get_content(buf, &element.children)
+        },
     };
 }
 
 fn paragraph(buf: &mut String, element: &Element) {
+    get_content(buf, &element.children);
+    buf.push('\n');
+}
+
+fn div(buf: &mut String, element: &Element) {
     get_content(buf, &element.children);
     buf.push('\n');
 }
