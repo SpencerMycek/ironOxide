@@ -22,6 +22,7 @@ static LOWER_LEFT: char = '\u{2514}';
 static LOWER_RIGHT: char = '\u{2518}';
 static HORIZONTAL: char = '\u{2500}';
 static VERTICAL: char = '\u{2502}';
+static BULLET: char = '\u{2022}';
 
 /// Displays the provided DOM using Ncurses
 pub fn display(dom: &Dom) {
@@ -209,42 +210,42 @@ fn draw_title(rb: &RustBox, x:usize, y:usize, width: usize, fg: Color, bg: Color
 fn delegate_elements(buf: &mut String, element: &Element) {
     let el_name: &str = &element.name.to_lowercase();
     match &el_name[..] {
-        "a" => {},
-        "article" => {},
+        "a" => anchor(buf, element),
+        "article" => div(buf, element),
         "br" => buf.push('\n'),
         "button" => buf.push_str("{Button elements not yet supported}"),
-        "center" => {},
+        "center" => div(buf, element),
         "div" => div(buf, element),
-        "em" => {},
+        "em" => augment_text(buf, element, "<em: "),
         "figure" => buf.push_str("{Figure elements not yet supported}"),
-        "footer" => {},
+        "footer" => div(buf, element),
         "form" => buf.push_str("{Form elements not yet supported}"),
-        "h1" => {},
-        "h2" => {},
-        "h3" => {},
-        "h4" => {},
-        "h5" => {},
-        "h6" => {},
-        "header" => {},
-        "hr" => {},
+        "h1" => heading(buf, &element.children[0], 1),
+        "h2" => heading(buf, &element.children[0], 2),
+        "h3" => heading(buf, &element.children[0], 3),
+        "h4" => heading(buf, &element.children[0], 4),
+        "h5" => heading(buf, &element.children[0], 5),
+        "h6" => heading(buf, &element.children[0], 6),
+        "header" => div(buf, element),
+        "hr" => buf.push_str("\n----\n"),
         "iframe" => buf.push_str("{Iframe elements not yet supported}"),
         "img" => buf.push_str("{Img elements not yet supported}"),
         "input" => buf.push_str("{Input elements not yet supported}"),
-        "main" => {},
-        "nav" => {},
-        "noscript" => {},
-        "ol" => {},
+        "main" => div(buf, element),
+        "nav" => nav(buf, element),
+        "noscript" => div(buf, element),
+        "ol" => list_ordered(buf, element),
         "p" => paragraph(buf, element),
         "picture" => buf.push_str("{Picture elements not yet supported}"),
-        "section" => {},
+        "section" => div(buf, element),
         "select" => {},
-        "span" => {},
-        "strong" => {},
+        "span" => span(buf, element),
+        "strong" => augment_text(buf, element, "<strong: "),
         "sub" => get_content(buf, &element.children),
         "sup" => get_content(buf, &element.children),
         "svg" => {},
         "table" => buf.push_str("{Table elements not yet supported}"),
-        "ul" => {},
+        "ul" => list_unordered(buf, element),
         "video" => buf.push_str("{Video elements not yet supported}"),
         _ => {
             buf.push_str(&("<".to_owned()+el_name+&">"));
@@ -258,8 +259,108 @@ fn paragraph(buf: &mut String, element: &Element) {
     buf.push('\n');
 }
 
+fn span(buf: &mut String, element: &Element) {
+    get_content(buf, &element.children);
+}
+
 fn div(buf: &mut String, element: &Element) {
     get_content(buf, &element.children);
+    buf.push('\n');
+}
+
+fn heading(buf: &mut String, text: &Node, num: usize) {
+    if let Node::Text(t) = text {
+        let header =  "#".repeat(num)+" "+t+"\n";
+        buf.push_str("\n");
+        buf.push_str(&header);
+    }
+}
+
+fn augment_text(buf: &mut String, element: &Element, augment: &str) {
+    buf.push_str(augment);
+    get_content(buf, &element.children);
+    buf.push_str(">");
+}
+
+fn nav(buf: &mut String, element: &Element) {
+    buf.push_str("\n-Navigation-\n");
+    get_content(buf, &element.children);
+    buf.push_str("\n-Navigation-End-\n");
+}
+
+fn anchor(buf: &mut String, element: &Element) {
+    let anchor_text: &str;
+    if (&element).children.len() != 0 {
+        anchor_text = match &element.children[0] {
+            Node::Text(t) => &t,
+            _ => &"",
+        };
+    } else {
+        anchor_text = match element.attributes.get("aria-label") {
+            None => &"This link has no loadable text",
+            Some(x) => match x {
+                None => "N/A",
+                Some(y) => &y,
+            },
+        };
+    }
+    let anchor = "[".to_owned()+anchor_text+"]("+match element.attributes.get("href") {
+        None => return,
+        Some(x) => match x {
+            None => "N/A",
+            Some(y) => y,
+        }
+    } + ")";
+    buf.push_str(&anchor);
+}
+
+fn list_ordered(buf: &mut String, element: &Element) {
+    buf.push('\n');
+    let mut index = 1;
+    for node in &element.children {
+        match node {
+            Node::Element(el) => {
+                let el_name = el.name.to_lowercase();
+                if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
+                    if el_name == "li" {
+                        buf.push('\t');
+                        buf.push_str(&index.to_string());
+                        index += 1;
+                        buf.push_str(". ");
+                        get_content(buf, &el.children);
+                        buf.push('\n');
+                    } else {
+                        get_content(buf, &el.children);
+                    }
+                }
+            },
+            _ => {}
+        }
+    }
+    buf.push('\n');
+}
+
+fn list_unordered(buf: &mut String, element: &Element) {
+    buf.push('\n');
+    for node in &element.children {
+        match node {
+            Node::Element(el) => {
+                let el_name = el.name.to_lowercase();
+                if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
+                    if el_name == "li" {
+                        buf.push('\t');
+                        buf.push(BULLET);
+                        buf.push(' ');
+                        get_content(buf, &el.children);
+                        buf.push('\n');
+                    } else {
+                        get_content(buf, &el.children);
+                    }
+                }
+            },
+            _ => {}
+        }
+    }
     buf.push('\n');
 }
 

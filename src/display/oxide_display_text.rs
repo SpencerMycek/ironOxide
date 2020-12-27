@@ -184,7 +184,7 @@ fn display_element_list_unordered(buf: &mut String, element: &Element) {
         match node {
             Node::Element(el) => {
                 let el_name = el.name.to_lowercase();
-                if !(HIDDEN_TAGS.iter().any(|&i| i == el.name.to_lowercase())) {
+                if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
                     if el_name == "li" {
                         buf.push_str("+ ");
                         get_text(buf, &el.children);
