@@ -1,6 +1,6 @@
 [package]
 name = "iron_oxide"
-version = "0.1.0"
+version = "0.5.0"
 authors = ["Spencer Mycek <Spence.Mycek@gmail.com>"]
 edition = "2018"
 
