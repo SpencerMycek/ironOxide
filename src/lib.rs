@@ -47,8 +47,8 @@ pub async fn run(args: cli::Opts) -> Result<()> {
 async fn http_get(url:& str) -> Result<String> {
     let url = url.parse::<hyper::Uri>().unwrap();
    
-    let https = HttpsConnector::new();
-    let client = Client::builder().build::<_, hyper::Body>(https);
+    let https = HttpsConnector::with_native_roots();
+    let client: Client<_, hyper::Body> = Client::builder().build(https);
 
     let mut res = client.get(url).await?;
 
