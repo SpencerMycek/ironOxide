@@ -21,7 +21,9 @@ with command line arguments.
 
 ## Roadmap
 - ~~Provide a text-only based display mode, that formats output in markdown~~
-- Provide an Ncurses based display mode (Using [`Rustbox`])
+- ~~Provide an Ncurses based display mode (Using [`Rustbox`])~~
+    - NOTE: Element compatibility can be improved, but currently it's mostly
+usable and I am happy with that
 - Improve the current http library to include other request methods (POST, PUT,
 OPTIONS, etc.)
 - Improve the current http library to include support for all http status codes
