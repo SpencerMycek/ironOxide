@@ -4,7 +4,8 @@ Iron Oxide is a mini web-browser written entirely in rust.
 My goal is to make it a command line based web browser, similar to Lynx. But in
 the future I would like to improve Iron Oxide and give it graphical support.  
 As of now, it can make a single http/s GET request, and can parse the response
-body as html and print the result as markdown formatted text
+body as html, and print the result as markdown formatted text or in an ncurses
+based display.
 
 ## The current state of Iron Oxide
 Iron Oxide only has support for a single GET request, and assumes that the
