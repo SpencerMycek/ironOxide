@@ -2,10 +2,6 @@
 //!
 //! Displays the web-content, typically an html webpage, using Ncurses
 
-#![allow(dead_code)]
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use std::default::Default;
 use rustbox::{Color, RustBox, Key};
 
@@ -75,7 +71,7 @@ pub fn display(dom: &Dom) {
 }
 
 /// Handles everything needed to build and present the ncurses display
-fn draw_browser(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, content: &Vec<String>, title: &String, line: usize) {
+#[allow(clippy::too_many_arguments)] fn draw_browser(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, content: &[String], title: &str, line: usize) {
     draw_border(rb, x, y, width, height, Color::White, Color::White, Color::Default);
     draw_title(rb, x, y, width, Color::White, Color::Default, title);
     display_content(rb, x+2, y+1, height-2, content, line);
@@ -85,7 +81,7 @@ fn draw_browser(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, c
 
 /// Adds the lines of the content to the rustbox display, 
 /// only provides lines that will fit
-fn display_content(rb: &RustBox, x: usize, y: usize, height: usize, content: &Vec<String>, line: usize) {
+fn display_content(rb: &RustBox, x: usize, y: usize, height: usize, content: &[String], line: usize) {
     let length = content.len();
     for i in 0..height {
         if i+line >= length {
@@ -105,11 +101,11 @@ fn process_content(content: String, width: usize) -> Vec<String> {
     loop {
         let curr: char = match chars.next() {
             None => {
-                if word_buf.len() != 0 {
+                if !word_buf.is_empty() {
                     line_buf.push_str(&word_buf);
                 }
-                if line_buf.len() != 0 {
-                    processed.push(line_buf.clone());    
+                if !line_buf.is_empty() {
+                    processed.push(line_buf);    
                 }
                 break;
             },
@@ -150,12 +146,12 @@ fn process_content(content: String, width: usize) -> Vec<String> {
             }
         }
     }
-    return processed;
+    processed
 }
 
 /// Fills a string buffer with content to display from the DOM
 /// Uses indirect recursion to access all elements
-fn get_content(buf: &mut String, nodes: &Vec<Node>) {
+fn get_content(buf: &mut String, nodes: &[Node]) {
     for node in nodes {
         match node {
             Node::Text(s) => buf.push_str(&s),
@@ -184,7 +180,7 @@ fn draw_vertical_line(rb: &RustBox, x: usize, y: usize, height: usize, fg: Color
 }
 
 /// Draws the Iron Oxide Ncurses border around the display area
-fn draw_border(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, _fill: Color, fg: Color, bg: Color) {
+#[allow(clippy::too_many_arguments)] fn draw_border(rb: &RustBox, x: usize, y: usize, width: usize, height: usize, _fill: Color, fg: Color, bg: Color) {
     draw_horizontal_line(rb, x, y, width, fg, bg);
     draw_horizontal_line(rb, x, y+height, width, fg, bg);
     draw_vertical_line(rb, x, y, height, fg, bg);
@@ -259,7 +255,7 @@ fn delegate_elements(buf: &mut String, element: &Element) {
         "ul" => list_unordered(buf, element),
         "video" => buf.push_str("{Video elements not yet supported}"),
         _ => {
-            buf.push_str(&("<".to_owned()+el_name+&">"));
+            buf.push_str(&("<".to_owned()+el_name+">"));
             get_content(buf, &element.children)
         },
     };
@@ -282,7 +278,7 @@ fn div(buf: &mut String, element: &Element) {
 fn heading(buf: &mut String, text: &Node, num: usize) {
     if let Node::Text(t) = text {
         let header =  "#".repeat(num)+" "+t+"\n";
-        buf.push_str("\n");
+        buf.push('\n');
         buf.push_str(&header);
     }
 }
@@ -290,7 +286,7 @@ fn heading(buf: &mut String, text: &Node, num: usize) {
 fn augment_text(buf: &mut String, element: &Element, augment: &str) {
     buf.push_str(augment);
     get_content(buf, &element.children);
-    buf.push_str(">");
+    buf.push('>');
 }
 
 fn nav(buf: &mut String, element: &Element) {
@@ -301,7 +297,7 @@ fn nav(buf: &mut String, element: &Element) {
 
 fn anchor(buf: &mut String, element: &Element) {
     let anchor_text: &str;
-    if (&element).children.len() != 0 {
+    if !element.children.is_empty() {
         anchor_text = match &element.children[0] {
             Node::Text(t) => &t,
             _ => &"",
@@ -329,23 +325,20 @@ fn list_ordered(buf: &mut String, element: &Element) {
     buf.push('\n');
     let mut index = 1;
     for node in &element.children {
-        match node {
-            Node::Element(el) => {
-                let el_name = el.name.to_lowercase();
-                if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
-                    if el_name == "li" {
-                        buf.push('\t');
-                        buf.push_str(&index.to_string());
-                        index += 1;
-                        buf.push_str(". ");
-                        get_content(buf, &el.children);
-                        buf.push('\n');
-                    } else {
-                        get_content(buf, &el.children);
-                    }
+        if let Node::Element(el) = node {
+            let el_name = el.name.to_lowercase();
+            if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
+                if el_name == "li" {
+                    buf.push('\t');
+                    buf.push_str(&index.to_string());
+                    index += 1;
+                    buf.push_str(". ");
+                    get_content(buf, &el.children);
+                    buf.push('\n');
+                } else {
+                    get_content(buf, &el.children);
                 }
-            },
-            _ => {}
+            }
         }
     }
     buf.push('\n');
@@ -354,22 +347,19 @@ fn list_ordered(buf: &mut String, element: &Element) {
 fn list_unordered(buf: &mut String, element: &Element) {
     buf.push('\n');
     for node in &element.children {
-        match node {
-            Node::Element(el) => {
-                let el_name = el.name.to_lowercase();
-                if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
-                    if el_name == "li" {
-                        buf.push('\t');
-                        buf.push(BULLET);
-                        buf.push(' ');
-                        get_content(buf, &el.children);
-                        buf.push('\n');
-                    } else {
-                        get_content(buf, &el.children);
-                    }
+        if let Node::Element(el) = node {
+            let el_name = el.name.to_lowercase();
+            if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
+                if el_name == "li" {
+                    buf.push('\t');
+                    buf.push(BULLET);
+                    buf.push(' ');
+                    get_content(buf, &el.children);
+                    buf.push('\n');
+                } else {
+                    get_content(buf, &el.children);
                 }
-            },
-            _ => {}
+            }
         }
     }
     buf.push('\n');

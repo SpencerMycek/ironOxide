@@ -3,9 +3,6 @@
 //! Provides functions used to display web-content for `Iron Oxide`.
 //! And is split into sub-modules depending on the requesed display type.
 
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use super::dom::{DomVariant, Dom};
 use super::dom::node::Node;
 
@@ -46,15 +43,15 @@ fn get_title(dom: &Dom) -> Option<String> {
                     }
                 }
             }
-            return None
+            None
         }
         DomVariant::DocumentFragment => {
-            return Some("/=====Document=Fragment=====/".to_string())
+            Some("/=====Document=Fragment=====/".to_string())
         }
         DomVariant::Empty => {
-            return Some("/=====Empty=Document=====/".to_string())
+            Some("/=====Empty=Document=====/".to_string())
         }
-    };
+    }
 }
 
 /// Returns a `Vec<Node>` containing either the Body element of an HTML
@@ -74,6 +71,6 @@ fn get_visible_nodes(dom: &Dom) -> &Vec<Node> {
         },
         _ => { &dom.children },
     };
-    return &root;
+    &root
 }
 

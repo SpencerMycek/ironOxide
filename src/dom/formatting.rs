@@ -2,10 +2,6 @@
 //!
 //! Makes the Errors from PEST more user friendly
 
-#![allow(dead_code)]
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use crate::error::Error;
 use crate::Rule;
 use anyhow::Result;

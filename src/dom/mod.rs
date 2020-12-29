@@ -2,10 +2,6 @@
 //!
 //! Defines the DOM (Document Object Module) for use with `Iron Oxide`
 
-#![allow(dead_code)]
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use anyhow::Result;
 use pest::{iterators::Pairs, Parser};
 use serde::Serialize;

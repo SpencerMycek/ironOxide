@@ -6,10 +6,6 @@
 //!
 //! [`tokio`]: https://docs.rs/tokio/0.3.1/tokio/
 
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
-use pretty_env_logger;
 use log::LevelFilter;
 
 use iron_oxide::cli;
@@ -25,7 +21,7 @@ async fn main() -> iron_oxide::Result<()> {
         0 => LevelFilter::Error,
         1 => LevelFilter::Warn,
         2 => LevelFilter::Info,
-        3 | _ => LevelFilter::Trace,
+        _ => LevelFilter::Trace,
     };
 
     builder.filter(None, filter).init();

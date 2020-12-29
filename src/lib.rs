@@ -3,9 +3,6 @@
 //! This is the main running process of the `Iron Oxide` browser and
 //! orchestrates all of the moving pieces
 
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use std::{str};
 use hyper::{body::HttpBody as _1, Client};
 use hyper_rustls::HttpsConnector;

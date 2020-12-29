@@ -2,10 +2,6 @@
 //!
 //! Displays the web-content, typucally an html webpage, by printing raw text
 
-#![allow(dead_code)]
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use super::super::dom::Dom;
 use super::super::dom::node::Node;
 use super::super::dom::element::{Element, HIDDEN_TAGS};
@@ -27,7 +23,7 @@ pub fn display(dom: &Dom) {
 
 /// Builds a String buffer with all of the text in an element, 
 /// recurses into the element and all children
-fn get_text(buf: &mut String, nodes: &Vec<Node>) {
+fn get_text(buf: &mut String, nodes: &[Node]) {
     for node in nodes {
         match node {
             Node::Text(s) => {
@@ -50,7 +46,7 @@ fn display_element_delegate(buf: &mut String, element: &Element) {
     match &el_name[..] {
         "a" => display_element_anchor(buf, element),
         "article" => display_element_div(buf, element),
-        "br" => buf.push_str("\n"),
+        "br" => buf.push('\n'),
         "button" => buf.push_str("{Button elements not yet supported}"),
         "center" => display_element_div(buf, element),
         "div" => display_element_div(buf, element),
@@ -111,7 +107,7 @@ fn display_element_div(buf: &mut String, element: &Element) {
 fn display_element_heading(buf: &mut String, text: &Node, num: usize) {
     if let Node::Text(t) = text {
         let header = "#".repeat(num)+" "+t+"\n";
-        buf.push_str("\n");
+        buf.push('\n');
         buf.push_str(&header);
     };
 }
@@ -120,13 +116,13 @@ fn display_element_heading(buf: &mut String, text: &Node, num: usize) {
 /// Will continue rendering based on the amount of children elements
 fn display_element_paragraph(buf: &mut String, element: &Element) {
     get_text(buf, &element.children);
-    buf.push_str("\n");
+    buf.push('\n');
 }
 
 /// Adds text representation of Anchor element to buffer string
 fn display_element_anchor(buf: &mut String, element: &Element) {
     let anchor_text: &str;
-    if (&element).children.len() != 0 {
+    if !element.children.is_empty() {
         anchor_text = match &element.children[0] {
             Node::Text(t) => &t,
             _ => &"",
@@ -152,52 +148,46 @@ fn display_element_anchor(buf: &mut String, element: &Element) {
 
 /// Adds text representation of an ordered list to buffer string
 fn display_element_list_ordered(buf: &mut String, element: &Element) {
-    buf.push_str("\n");
+    buf.push('\n');
     let mut index = 1;
     for node in &element.children {
-        match node {
-            Node::Element(el) => {
-                let el_name = el.name.to_lowercase();
-                if !(HIDDEN_TAGS.iter().any(|&i| i == el.name.to_lowercase())) {
-                    if el_name == "li" {
-                        buf.push_str("\t");
-                        buf.push_str(&index.to_string());
-                        index += 1;
-                        buf.push_str(". ");
-                        get_text(buf, &el.children);
-                        buf.push_str("\n");
-                    } else {
-                        get_text(buf, &el.children);
-                    }
+        if let Node::Element(el) = node {
+            let el_name = el.name.to_lowercase();
+            if !(HIDDEN_TAGS.iter().any(|&i| i == el.name.to_lowercase())) {
+                if el_name == "li" {
+                    buf.push('\t');
+                    buf.push_str(&index.to_string());
+                    index += 1;
+                    buf.push_str(". ");
+                    get_text(buf, &el.children);
+                    buf.push('\n');
+                } else {
+                    get_text(buf, &el.children);
                 }
-            },
-            _ => {}
+            }
         }
     }
-    buf.push_str("\n");
+    buf.push('\n');
 }
 
 /// Adds text representation of an unordered list to buffer string
 fn display_element_list_unordered(buf: &mut String, element: &Element) {
-    buf.push_str("\n");
+    buf.push('\n');
     for node in &element.children {
-        match node {
-            Node::Element(el) => {
-                let el_name = el.name.to_lowercase();
-                if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
-                    if el_name == "li" {
-                        buf.push_str("+ ");
-                        get_text(buf, &el.children);
-                        buf.push_str("\n");
-                    } else {
-                        get_text(buf, &el.children);
-                    }
+        if let Node::Element(el) = node {
+            let el_name = el.name.to_lowercase();
+            if !(HIDDEN_TAGS.iter().any(|&i| i == el_name)) {
+                if el_name == "li" {
+                    buf.push_str("+ ");
+                    get_text(buf, &el.children);
+                    buf.push('\n');
+                } else {
+                    get_text(buf, &el.children);
                 }
-            },
-            _ => {}
+            }
         }
     }
-    buf.push_str("\n");
+    buf.push('\n');
 }
 
 /// Adds text representation of a nav element to buffer string

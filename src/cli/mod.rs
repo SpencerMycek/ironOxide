@@ -2,10 +2,6 @@
 //!
 //! Controls and receives command line arguments for `Iron Oxide`
 
-#![allow(dead_code)]
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use clap::Clap;
 
 /// A rust-based mini web-browser

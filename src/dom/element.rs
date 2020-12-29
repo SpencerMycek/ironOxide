@@ -2,9 +2,6 @@
 //!
 //! Defines html elements that will be inside of a DOM
 
-#![deny(warnings)]
-#![warn(rust_2018_idioms)]
-
 use super::node::Node;
 use anyhow::Result;
 use serde::{Serialize, Serializer};
@@ -24,7 +21,7 @@ pub enum ElementVariant {
 
 /// A list of identifiers of non-visible element names.
 /// i.e. "style", "script"
-pub static HIDDEN_TAGS: [&'static str; 2] = ["style", "script"];
+pub static HIDDEN_TAGS: [&str; 2] = ["style", "script"];
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
