@@ -137,6 +137,17 @@ fn process_content(content: String, width: usize) -> Vec<String> {
             word_buf.push_str(&" ".repeat(4));
         } else {
             word_buf.push(curr);
+            if word_buf.len() + line_buf.len() > width {
+                processed.push(line_buf.clone());
+                line_buf.clear();
+                line_buf.push_str(&word_buf);
+                word_buf.clear();
+            } else if word_buf.len() >= width {
+                processed.push(line_buf.clone());
+                line_buf.clear();
+                processed.push(word_buf.clone());
+                word_buf.clear();
+            }
         }
     }
     return processed;
